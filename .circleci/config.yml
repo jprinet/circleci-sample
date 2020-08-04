@@ -1,0 +1,58 @@
+version: 2.1
+
+workflows:
+  test-env-vars:
+    jobs:
+      - build:
+          context: jfrog-pipelines-sample
+
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+      - run:
+            name: Configuring docker daemon to use insecure registry
+            command: >
+              json='daemon.json.tmp'
+
+              echo '{ "insecure-registries": [ "'${DOCKER_REGISTRY}'" ] }' > ${json}
+
+              sudo mv ${json} /etc/docker/daemon.json
+
+              sudo service docker restart
+
+              echo "Configured Docker daemon with insecure-registry"
+      - run:
+            name: Log into docker registry
+            command: echo "$DOCKER_REGISTRY_PASSWORD" | docker login --username $DOCKER_REGISTRY_LOGIN --password-stdin ${DOCKER_REGISTRY}
+      - run:
+            name: Build Docker image
+            command: docker build -t ${DOCKER_REGISTRY}/jerome-docker-dev/hello-world-from-circleci .
+#      - run:
+#            name: Push Docker image
+#            command: docker push a22667cdaae1f49178f3e7753535f4e3-1462939657.us-east-2.elb.amazonaws.com/jerome-docker-dev/hello-world-from-circleci
+      - run:
+          name: Download JFrog CLI
+          command: curl -fL https://getcli.jfrog.io | sh
+      - run:
+          name: Configure Artifactory
+          command: ./jfrog rt c jerome-eks --interactive=false --url=http://${DOCKER_REGISTRY}/artifactory --user=admin --apikey=${ARTIFACTORY_API_KEY}
+      - run:
+          name: Ping Artifactory
+          command: ./jfrog rt ping
+#      - run:
+#          name: Push Docker image
+#          command: ./jfrog rt dp ${DOCKER_REGISTRY}/jerome-docker-dev/hello-world-from-circleci jerome-docker-dev --build-name=hello-world-from-circleci --build-number=${CIRCLE_BUILD_NUM}
+      - run:
+          name: Collect build information
+          command: ./jfrog rt bce hello-world-from-circleci ${CIRCLE_BUILD_NUM}
+      - run:
+          name: Publish build information
+          command: ./jfrog rt bp hello-world-from-circleci ${CIRCLE_BUILD_NUM}
+      - run:
+          name: Promote build
+          command: |
+            RANDOM_NUMBER=`shuf -i 1-100 -n 1`
+            echo "nb tests = ${RANDOM_NUMBER}"
+            ./jfrog rt bpr hello-world-from-circleci ${CIRCLE_BUILD_NUM} jerome-docker-int-local --props "stage=INT;nbTests=${RANDOM_NUMBER}"

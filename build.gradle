@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.jfrog.artifactory' version '4.16.1'
+}
+
+group='com.jfrog.jerome'
+version='1.0.0'
+
+repositories {
+    jcenter()
+}
+
+mainClassName = 'com.jfrog.jerome.HelloWorld'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "joda-time:joda-time:2.2"
+}
