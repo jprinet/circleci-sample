@@ -56,3 +56,4 @@ jobs:
             RANDOM_NUMBER=`shuf -i 1-100 -n 1`
             echo "nb tests = ${RANDOM_NUMBER}"
             ./jfrog rt bpr hello-world-from-circleci ${CIRCLE_BUILD_NUM} jerome-docker-int-local --props "stage=INT;nbTests=${RANDOM_NUMBER}"
+
