@@ -1,4 +1,11 @@
-version: 2
+version: 2.1
+
+workflows:
+  test-env-vars:
+    jobs:
+      - build:
+          context: jfrog-pipelines-sample
+
 jobs:
   build:
     docker:
@@ -9,10 +16,7 @@ jobs:
       - checkout
       - run: sudo chown -R circleci:circleci /usr/local/bin
       - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
-      - run:
-          command: |
-            sudo pip install pipenv
-            pipenv install
-      - run:
-          command: |
-            pipenv run python main.py
+      - run: |
+          pip install requests -i http://${DOCKER_REGISTRY_LOGIN}:${ARTIFACTORY_API_KEY}@${DOCKER_REGISTRY}/artifactory/api/pypi/jerome-python-dev/simple --trusted-host ${DOCKER_REGISTRY}
+      - run: |
+          python main.py
