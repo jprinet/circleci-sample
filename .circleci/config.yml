@@ -38,12 +38,9 @@ jobs:
       - run:
           name: Ping Artifactory
           command: ./jfrog rt ping
-      - run:
-          name: Pull Docker image dependencies through CLI
-          command: ./jfrog rt docker-pull mariadb jerome-docker-dev --build-name=hello-world-from-circleci --build-number=${CIRCLE_BUILD_NUM}
 #      - run:
-#          name: Push Docker image
-#          command: docker push a22667cdaae1f49178f3e7753535f4e3-1462939657.us-east-2.elb.amazonaws.com/jerome-docker-dev/hello-world-from-circleci
+#          name: Pull Docker image dependencies through CLI
+#          command: ./jfrog rt docker-pull mariadb jerome-docker-dev --build-name=hello-world-from-circleci --build-number=${CIRCLE_BUILD_NUM}
       - run:
           name: Push Docker image through CLI
           command: ./jfrog rt dp ${DOCKER_REGISTRY}/jerome-docker-dev/hello-world-from-circleci jerome-docker-dev --build-name=hello-world-from-circleci --build-number=${CIRCLE_BUILD_NUM}
